@@ -21,8 +21,6 @@ namespace SpellBreakers_Server.Users
         {
             RegisterResponsePacket response = new RegisterResponsePacket();
 
-            Console.WriteLine($"{register.Nickname} | {register.Password}");
-
             if (!_userRepository.TryRegister(register.Nickname, register.Password))
             {
                 response.Success = false;
@@ -35,7 +33,6 @@ namespace SpellBreakers_Server.Users
                 Console.WriteLine($"[서버] 새로운 유저가 회원가입했습니다! : {register.Nickname}");
             }
 
-            Console.WriteLine("보냄");
             await TcpPacketHelper.SendAsync(socket, response);
         }
 

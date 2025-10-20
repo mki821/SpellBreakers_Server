@@ -45,6 +45,7 @@ namespace SpellBreakers_Server.Tcp
                 }
 
                 Type type = PacketRegistry.GetTypeById(id);
+
                 return (PacketBase?)MessagePackSerializer.Deserialize(type, body.AsMemory(0, length));
             }
             finally

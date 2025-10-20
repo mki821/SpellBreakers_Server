@@ -15,6 +15,7 @@ namespace SpellBreakers_Server
 
             PacketHandler.Register(PacketId.Register, new RegisterHandler());
             PacketHandler.Register(PacketId.Login, new LoginHandler());
+            PacketHandler.Register(PacketId.Chat, new ChatHandler());
             PacketHandler.Register(PacketId.Move, new MoveHandler());
         }
 

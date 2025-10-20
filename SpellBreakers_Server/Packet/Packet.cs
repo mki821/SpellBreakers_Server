@@ -48,9 +48,17 @@ namespace SpellBreakers_Server.Packet
     }
 
     [MessagePackObject]
-    public class MovePacket : UdpPacketBase
+    public class ChatPacket : PacketBase
     {
         public override ushort ID => 5;
+        [Key(1)] public string Sender { get; set; } = "";
+        [Key(2)] public string Message { get; set; } = "";
+    }
+
+    [MessagePackObject]
+    public class MovePacket : UdpPacketBase
+    {
+        public override ushort ID => 6;
         [Key(2)] public float X { get; set; }
         [Key(3)] public float Y { get; set; }
     }

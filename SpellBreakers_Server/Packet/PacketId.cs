@@ -10,6 +10,8 @@
         Login,
         LoginResponse,
 
+        Chat,
+
         Move
     }
 }

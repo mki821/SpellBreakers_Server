@@ -17,7 +17,7 @@ namespace SpellBreakers_Server.Packet
     [MessagePackObject]
     public class RegisterPacket : PacketBase
     {
-        public override ushort ID => 1;
+        public override ushort ID => (ushort)PacketId.Register;
         [Key(1)] public string Nickname { get; set; } = "";
         [Key(2)] public string Password { get; set; } = "";
     }
@@ -25,7 +25,7 @@ namespace SpellBreakers_Server.Packet
     [MessagePackObject]
     public class RegisterResponsePacket : PacketBase
     {
-        public override ushort ID => 2;
+        public override ushort ID => (ushort)PacketId.RegisterResponse;
         [Key(1)] public bool Success { get; set; }
         [Key(2)] public string Message { get; set; } = "";
     }
@@ -33,7 +33,7 @@ namespace SpellBreakers_Server.Packet
     [MessagePackObject]
     public class LoginPacket : PacketBase
     {
-        public override ushort ID => 3;
+        public override ushort ID => (ushort)PacketId.Login;
         [Key(1)] public string Nickname { get; set; } = "";
         [Key(2)] public string Password { get; set; } = "";
     }
@@ -41,7 +41,7 @@ namespace SpellBreakers_Server.Packet
     [MessagePackObject]
     public class LoginResponsePacket : PacketBase
     {
-        public override ushort ID => 4;
+        public override ushort ID => (ushort)PacketId.LoginResponse;
         [Key(1)] public bool Success { get; set; }
         [Key(2)] public string Message { get; set; } = "";
         [Key(3)] public string IssuedToken { get; set; } = "";
@@ -50,7 +50,7 @@ namespace SpellBreakers_Server.Packet
     [MessagePackObject]
     public class ChatPacket : PacketBase
     {
-        public override ushort ID => 5;
+        public override ushort ID => (ushort)PacketId.Chat;
         [Key(1)] public string Sender { get; set; } = "";
         [Key(2)] public string Message { get; set; } = "";
     }
@@ -58,7 +58,7 @@ namespace SpellBreakers_Server.Packet
     [MessagePackObject]
     public class MovePacket : UdpPacketBase
     {
-        public override ushort ID => 6;
+        public override ushort ID => (ushort)PacketId.Move;
         [Key(2)] public float X { get; set; }
         [Key(3)] public float Y { get; set; }
     }

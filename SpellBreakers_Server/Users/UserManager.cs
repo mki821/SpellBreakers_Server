@@ -25,6 +25,7 @@ namespace SpellBreakers_Server.Users
         public User? GetByToken(string token)
         {
             _users.TryGetValue(token, out User? user);
+
             return user;
         }
 
@@ -33,6 +34,19 @@ namespace SpellBreakers_Server.Users
             foreach(User user in _users.Values)
             {
                 if (user.TcpSocket == socket)
+                {
+                    return user;
+                }
+            }
+
+            return null;
+        }
+
+        public User? GetByNickname(string nickname)
+        {
+            foreach(User user in _users.Values)
+            {
+                if(user.Nickname == nickname)
                 {
                     return user;
                 }

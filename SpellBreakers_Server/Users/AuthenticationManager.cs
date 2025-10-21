@@ -5,7 +5,7 @@ using SpellBreakers_Server.Tcp;
 
 namespace SpellBreakers_Server.Users
 {
-    class AuthenticationManager
+    public class AuthenticationManager
     {
         private static Lazy<AuthenticationManager> _instance = new Lazy<AuthenticationManager>(() => new AuthenticationManager());
         public static AuthenticationManager Instance = _instance.Value;
@@ -38,9 +38,21 @@ namespace SpellBreakers_Server.Users
 
         public async Task LoginAsync(Socket socket, LoginPacket login)
         {
-            string? token = _userRepository.TryLogin(login.Nickname, login.Password);
-
             LoginResponsePacket response = new LoginResponsePacket();
+
+            if (UserManager.Instance.GetByNickname(login.Nickname) != null)
+            {
+                response.Success = false;
+                response.Message = "로그인 실패 : 이미 로그인 되어있는 계정입니다!";
+
+                await TcpPacketHelper.SendAsync(socket, response);
+
+                Console.WriteLine($"[서버] 로그인 실패 : 이미 로그인 되어있는 계정입니다! - {login.Nickname}");
+
+                return;
+            }
+
+            string? token = _userRepository.TryLogin(login.Nickname, login.Password);
 
             if (token == null)
             {
@@ -49,7 +61,7 @@ namespace SpellBreakers_Server.Users
 
                 await TcpPacketHelper.SendAsync(socket, response);
 
-                Console.WriteLine($"[서버] 로그인 실패! : {login.Nickname}");
+                Console.WriteLine($"[서버] 로그인 실패 : 닉네임 혹은 비밀번호가 틀렸습니다! - {login.Nickname}");
 
                 return;
             }

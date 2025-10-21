@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using SpellBreakers_Server.Packet;
+using SpellBreakers_Server.Users;
 
 namespace SpellBreakers_Server.Tcp
 {
@@ -47,6 +48,12 @@ namespace SpellBreakers_Server.Tcp
             finally
             {
                 Console.WriteLine($"[서버] 클라이언트 종료 : {socket.RemoteEndPoint}");
+
+                User? user = UserManager.Instance.GetBySocket(socket);
+                if(user != null)
+                {
+                    UserManager.Instance.Remove(user.Token);
+                }
 
                 socket.Close();
             }

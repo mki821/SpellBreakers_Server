@@ -64,6 +64,13 @@ namespace SpellBreakers_Server.Rooms
 
                 await TcpPacketHelper.SendAsync(user.TcpSocket, response);
                 await UpdateRoomInfo();
+
+                ChatPacket chat = new ChatPacket
+                {
+                    Message = $"{user.Nickname} 님이 참가하였습니다."
+                };
+
+                await Broadcast(chat);
             }
             else
             {
@@ -82,11 +89,23 @@ namespace SpellBreakers_Server.Rooms
                 _spectators.Remove(user);
             }
 
+            if(_players.Count == 0 && _spectators.Count == 0)
+            {
+                RoomManager.Instance.Remove(this);
+            }
+
             LeaveRoomResponsePacket response = new LeaveRoomResponsePacket();
             response.Success = true;
 
             await TcpPacketHelper.SendAsync(user.TcpSocket, response);
             await UpdateRoomInfo();
+
+            ChatPacket chat = new ChatPacket
+            {
+                Message = $"{user.Nickname} 님이 퇴장하였습니다."
+            };
+
+            await Broadcast(chat);
         }
 
         public async Task SwitchRole(User user)

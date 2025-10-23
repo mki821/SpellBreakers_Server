@@ -20,6 +20,7 @@ namespace SpellBreakers_Server.Rooms
             {
                 RoomElement element = new RoomElement
                 {
+                    ID = room.ID,
                     Name = room.Name,
                     Locked = room.Password != "",
                     Playing = false,
@@ -36,6 +37,11 @@ namespace SpellBreakers_Server.Rooms
         {
             room.ID = _currentId++;
             _roomsByName.Add(room.ID, room);
+        }
+
+        public void Remove(Room room)
+        {
+            _roomsByName.Remove(room.ID);
         }
 
         public Room? GetByID(ushort id)

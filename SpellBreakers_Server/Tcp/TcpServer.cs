@@ -53,6 +53,11 @@ namespace SpellBreakers_Server.Tcp
                 if(user != null)
                 {
                     UserManager.Instance.Remove(user.Token);
+
+                    if(user.CurrentRoom != null)
+                    {
+                        await user.CurrentRoom.Leave(user);
+                    }
                 }
 
                 socket.Close();

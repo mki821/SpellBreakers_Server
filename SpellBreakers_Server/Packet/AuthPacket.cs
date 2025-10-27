@@ -3,18 +3,6 @@
 namespace SpellBreakers_Server.Packet
 {
     [MessagePackObject]
-    public class PacketBase
-    {
-        [Key(0)] public virtual ushort ID { get; set; }
-    }
-
-    [MessagePackObject]
-    public class UdpPacketBase : PacketBase
-    {
-        [Key(1)] public string Token { get; set; } = "";
-    }
-
-    [MessagePackObject]
     public class RegisterPacket : PacketBase
     {
         public override ushort ID => (ushort)PacketId.Register;
@@ -48,18 +36,8 @@ namespace SpellBreakers_Server.Packet
     }
 
     [MessagePackObject]
-    public class ChatPacket : PacketBase
+    public class UdpConnectPacket : UdpPacketBase
     {
-        public override ushort ID => (ushort)PacketId.Chat;
-        [Key(1)] public string Sender { get; set; } = "";
-        [Key(2)] public string Message { get; set; } = "";
-    }
-
-    [MessagePackObject]
-    public class MovePacket : UdpPacketBase
-    {
-        public override ushort ID => (ushort)PacketId.Move;
-        [Key(2)] public float X { get; set; }
-        [Key(3)] public float Y { get; set; }
+        public override ushort ID => (ushort)PacketId.UdpConnect;
     }
 }

@@ -15,6 +15,7 @@ namespace SpellBreakers_Server
 
             PacketHandler.Register(PacketId.Register, new RegisterHandler());
             PacketHandler.Register(PacketId.Login, new LoginHandler());
+            PacketHandler.Register(PacketId.UdpConnect, new UdpConnectHandler());
 
             PacketHandler.Register(PacketId.ListRoom, new ListRoomHandler());
             PacketHandler.Register(PacketId.CreateRoom, new CreateRoomHandler());

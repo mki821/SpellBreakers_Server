@@ -7,10 +7,10 @@ namespace SpellBreakers_Server.Udp
 {
     public static class UdpPacketHelper
     {
-        public static async Task SendAsync<T>(Socket socket, EndPoint endPoint, T packet) where T : UdpPacketBase
+        public static async Task SendAsync<T>(EndPoint endPoint, T packet) where T : UdpPacketBase
         {
             byte[] body = MessagePackSerializer.Serialize(packet);
-            await socket.SendToAsync(body, SocketFlags.None, endPoint);
+            await UdpServer.Socket.SendToAsync(body, SocketFlags.None, endPoint);
         }
 
         public static PacketBase? Deserialize(byte[] data, int length)

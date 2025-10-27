@@ -11,9 +11,12 @@ namespace SpellBreakers_Server.PacketHandlers
             if (packet is MovePacket move)
             {
                 User? user = UserManager.Instance.GetBySocket(socket);
-                if (user == null) throw new Exception("Not Existent User!");
+                if (user == null) return;
 
-                Console.WriteLine($"[테스트] {user.Nickname} Move X = {move.X}, Y = {move.Y}");
+                if (user.CurrentRoom != null)
+                {
+                    await user.CurrentRoom.BroadcastUdp(move);
+                }
             }
         }
     }

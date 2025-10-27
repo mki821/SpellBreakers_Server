@@ -78,6 +78,14 @@ namespace SpellBreakers_Server.Packet
     }
 
     [MessagePackObject]
+    public class ChatPacket : PacketBase
+    {
+        public override ushort ID => (ushort)PacketId.Chat;
+        [Key(1)] public string Sender { get; set; } = "";
+        [Key(2)] public string Message { get; set; } = "";
+    }
+
+    [MessagePackObject]
     public class SwitchRolePacket : PacketBase
     {
         public override ushort ID => (ushort)PacketId.SwitchRole;
@@ -88,7 +96,14 @@ namespace SpellBreakers_Server.Packet
     {
         public override ushort ID => (ushort)PacketId.SwitchRoleResponse;
         [Key(1)] public bool Success { get; set; }
-        [Key(2)] public bool ToSpectator { get; set; }
-        [Key(3)] public string Message { get; set; } = "";
+        [Key(2)] public string Message { get; set; } = "";
+    }
+
+    [MessagePackObject]
+    public class MovePacket : UdpPacketBase
+    {
+        public override ushort ID => (ushort)PacketId.Move;
+        [Key(2)] public float X { get; set; }
+        [Key(3)] public float Y { get; set; }
     }
 }

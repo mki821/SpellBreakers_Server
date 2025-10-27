@@ -10,6 +10,8 @@
         Login,
         LoginResponse,
 
+        UdpConnect,
+
         ListRoom,
         ListRoomResponse,
         CreateRoom,
@@ -19,10 +21,9 @@
         LeaveRoomResponse,
 
         RoomInfo,
+        Chat,
         SwitchRole,
         SwitchRoleResponse,
-
-        Chat,
 
         Move
     }

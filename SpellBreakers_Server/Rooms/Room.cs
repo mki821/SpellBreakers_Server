@@ -1,6 +1,8 @@
 ﻿using SpellBreakers_Server.Packet;
 using SpellBreakers_Server.Tcp;
+using SpellBreakers_Server.Udp;
 using SpellBreakers_Server.Users;
+using System.Net;
 
 namespace SpellBreakers_Server.Rooms
 {
@@ -122,7 +124,6 @@ namespace SpellBreakers_Server.Rooms
                         _spectators.Add(user);
 
                         response.Success = true;
-                        response.ToSpectator = true;
                     }
                     else
                     {
@@ -138,7 +139,6 @@ namespace SpellBreakers_Server.Rooms
                         _players.Add(user);
 
                         response.Success = true;
-                        response.ToSpectator = false;
                     }
                     else
                     {
@@ -187,6 +187,36 @@ namespace SpellBreakers_Server.Rooms
                 for (int i = 0; i < SpectatorCount; ++i)
                 {
                     tasks.Add(TcpPacketHelper.SendAsync(_spectators[i].TcpSocket, packet));
+                }
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
+        public async Task BroadcastUdp<T>(T packet) where T : UdpPacketBase
+        {
+            List<Task> tasks = new List<Task>();
+
+            lock (_locker)
+            {
+                for (int i = 0; i < PlayerCount; ++i)
+                {
+                    User user = _players[i];
+
+                    if (user.UdpEndPoint != null)
+                    {
+                        tasks.Add(UdpPacketHelper.SendAsync(user.UdpEndPoint, packet));
+                    }
+                }
+
+                for (int i = 0; i < SpectatorCount; ++i)
+                {
+                    User user = _spectators[i];
+
+                    if (user.UdpEndPoint != null)
+                    {
+                        tasks.Add(UdpPacketHelper.SendAsync(user.UdpEndPoint, packet));
+                    }
                 }
             }
 

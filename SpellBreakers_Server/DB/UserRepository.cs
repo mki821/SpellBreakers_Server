@@ -19,20 +19,36 @@ namespace SpellBreakers_Server.DB
             using SqliteConnection connection = new SqliteConnection(_connectionString);
             connection.Open();
 
-            string query = @"CREATE TABLE IF NOT EXISTS Users (Id INTEGER PRIMARY KEY AUTOINCREMENT, Nickname TEXT NOT NULL UNIQUE, Password TEXT NOT NULL, Token TEXT, TokenIssuedAt DATETIME)";
+            CreateUsers(connection);
+            CreateUserTokens(connection);
+        }
+
+        private static void CreateUsers(SqliteConnection connection)
+        {
+            string query = @"CREATE TABLE IF NOT EXISTS Users (ID TEXT PRIMARY KEY, Nickname TEXT NOT NULL UNIQUE, Password TEXT NOT NULL)";
 
             using SqliteCommand cmd = new SqliteCommand(query, connection);
             cmd.ExecuteNonQuery();
         }
 
-        public bool TryRegister(string nickname, string password)
+        private static void CreateUserTokens(SqliteConnection connection)
+        {
+            string query = @"CREATE TABLE IF NOT EXISTS UserTokens (ID INTEGER PRIMARY KEY AUTOINCREMENT, UserID TEXT NOT NULL, Token TEXT NOT NULL, Expiry DATETIME NOT NULL,
+                                FOREIGN KEY(UserID) REFERENCES Users(ID))";
+
+            using SqliteCommand cmd = new SqliteCommand(query, connection);
+            cmd.ExecuteNonQuery();
+        }
+
+        public bool TryRegister(string id, string nickname, string password)
         {
             using SqliteConnection connection = new SqliteConnection(_connectionString);
             connection.Open();
 
-            string query = @"INSERT INTO Users (Nickname, Password) Values (@nickname, @password)";
+            string query = @"INSERT INTO Users (ID, Nickname, Password) Values (@id, @nickname, @password)";
 
             using SqliteCommand cmd = new SqliteCommand(query, connection);
+            cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@nickname", nickname);
             cmd.Parameters.AddWithValue("@password", HashPassword(password));
 
@@ -48,32 +64,84 @@ namespace SpellBreakers_Server.DB
             }
         }
 
-        public string? TryLogin(string nickname, string password)
+        public string? TryLogin(string id, string password, ref string message)
         {
             using SqliteConnection connection = new SqliteConnection(_connectionString);
             connection.Open();
 
-            string query = @"SELECT Id FROM Users WHERE Nickname=@nickname AND Password=@password";
+            string query = @"SELECT Password FROM Users WHERE ID=@id";
 
             using SqliteCommand cmd = new SqliteCommand(query, connection);
-            cmd.Parameters.AddWithValue("@nickname", nickname);
-            cmd.Parameters.AddWithValue("@password", HashPassword(password));
+            cmd.Parameters.AddWithValue("@id", id);
 
             object? result = cmd.ExecuteScalar();
-            if (result == null) return null;
+            if (result == null)
+            {
+                message = "유저를 찾을 수 없습니다!";
 
-            int id = Convert.ToInt32(result);
+                return null;
+            }
+
+            string? storedHash = result.ToString();
+            if (HashPassword(password) != storedHash)
+            {
+                message = "아이디 혹은 비밀번호가 틀렸습니다!";
+
+                return null;
+            }
+
             string token = Guid.NewGuid().ToString();
+            DateTime expiry = DateTime.UtcNow.AddDays(30);
 
-            string update = @"UPDATE Users Set Token=@token, TokenIssuedAt=@tokenIssuedAt WHERE Id=@id";
+            string insert = @"INSERT INTO UserTokens (UserID, Token, Expiry) Values (@id, @token, @expiry)";
 
-            using SqliteCommand updateCmd = new SqliteCommand(update, connection);
-            updateCmd.Parameters.AddWithValue("@token", token);
-            updateCmd.Parameters.AddWithValue("@tokenIssuedAt", DateTime.UtcNow);
-            updateCmd.Parameters.AddWithValue("@id", id);
-            updateCmd.ExecuteNonQuery();
+            using SqliteCommand insertCmd = new SqliteCommand(insert, connection);
+            insertCmd.Parameters.AddWithValue("@id", id);
+            insertCmd.Parameters.AddWithValue("@token", token);
+            insertCmd.Parameters.AddWithValue("@expiry", expiry);
+            insertCmd.ExecuteNonQuery();
 
             return token;
+        }
+
+        public string? AutoLogin(string token)
+        {
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            string query = @"SELECT Expiry From UserTokens WHERE Token=@token";
+
+            using SqliteCommand cmd = new SqliteCommand(query, connection);
+            cmd.Parameters.AddWithValue("@token", token);
+
+            object? result = cmd.ExecuteScalar();
+            if(result == null) return null;
+
+            if(!DateTime.TryParse(result.ToString(), out DateTime expiry)) return null;
+
+            if(expiry < DateTime.UtcNow)
+            {
+                string delete = @"DELETE FROM UserTokens WHERE Token=@token";
+
+                using SqliteCommand deleteCmd = new SqliteCommand(delete, connection);
+                deleteCmd.Parameters.AddWithValue(@"token", token);
+                deleteCmd.ExecuteNonQuery();
+
+                return null;
+            }
+
+            string newToken = Guid.NewGuid().ToString();
+            DateTime newExpiry = DateTime.UtcNow.AddDays(30);
+
+            string update = @"UPDATE UserTokens SET Token=@newToken, Expiry=@expiry WHERE Token=@token";
+
+            using SqliteCommand updateCmd = new SqliteCommand(update, connection);
+            updateCmd.Parameters.AddWithValue("@newToken", newToken);
+            updateCmd.Parameters.AddWithValue("@expiry", newExpiry);
+            updateCmd.Parameters.AddWithValue("@token", token);
+            updateCmd.ExecuteNonQuery();
+
+            return newToken;
         }
 
         private static string HashPassword(string password)
@@ -82,22 +150,37 @@ namespace SpellBreakers_Server.DB
             return Convert.ToBase64String(bytes);
         }
 
-        public bool IsValidToken(string token, int validitySeconds = 86400)
+        public string? GetIDByToken(string token)
         {
-            using var connection = new SqliteConnection(_connectionString);
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
             connection.Open();
 
-            string query = @"SELECT TokenIssuedAt FROM Users WHERE Token=@token";
+            string query = @"SELECT UserID FROM UserTokens WHERE Token=@token";
 
             using SqliteCommand cmd = new SqliteCommand(query, connection);
             cmd.Parameters.AddWithValue("@token", token);
+            
+            object? result = cmd.ExecuteScalar();
+
+            return result?.ToString();
+        }
+
+        public string? GetNicknameByID(string id)
+        {
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            string query = @"SELECT Nickname FROM Users WHERE ID=@id";
+
+            using SqliteCommand cmd = new SqliteCommand(query, connection);
+            cmd.Parameters.AddWithValue("@id", id);
 
             object? result = cmd.ExecuteScalar();
-            if (result == null) return false;
+            if (result == null) return null;
 
-            DateTime tokenIssuedAt = DateTime.Parse(result.ToString()!);
+            string? nickname = Convert.ToString(result);
 
-            return (DateTime.UtcNow - tokenIssuedAt).TotalSeconds <= validitySeconds;
+            return nickname;
         }
     }
 }

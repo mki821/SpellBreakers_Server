@@ -42,11 +42,11 @@ namespace SpellBreakers_Server.Users
             return null;
         }
 
-        public User? GetByNickname(string nickname)
+        public User? GetByID(string id)
         {
             foreach(User user in _users.Values)
             {
-                if(user.Nickname == nickname)
+                if(user.ID == id)
                 {
                     return user;
                 }

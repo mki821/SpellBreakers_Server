@@ -8,6 +8,7 @@ namespace SpellBreakers_Server.Users
     {
         public string Token { get; }
 
+        public string? ID { get; set; }
         public string? Nickname { get; set; }
 
         public Socket TcpSocket { get; set; }
@@ -15,9 +16,10 @@ namespace SpellBreakers_Server.Users
 
         public Room? CurrentRoom { get; set; }
 
-        public User(string token, string nickname, Socket socket)
+        public User(string token, string id, string nickname, Socket socket)
         {
             Token = token;
+            ID = id;
             Nickname = nickname;
             TcpSocket = socket;
         }

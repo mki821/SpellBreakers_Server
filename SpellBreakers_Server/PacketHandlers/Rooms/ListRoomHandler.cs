@@ -2,7 +2,7 @@
 using SpellBreakers_Server.Packet;
 using SpellBreakers_Server.Rooms;
 
-namespace SpellBreakers_Server.PacketHandlers
+namespace SpellBreakers_Server.PacketHandlers.Rooms
 {
     public class ListRoomHandler : IPacketHandler
     {

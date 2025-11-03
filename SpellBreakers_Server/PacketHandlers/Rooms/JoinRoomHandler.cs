@@ -4,7 +4,7 @@ using SpellBreakers_Server.Rooms;
 using SpellBreakers_Server.Tcp;
 using SpellBreakers_Server.Users;
 
-namespace SpellBreakers_Server.PacketHandlers
+namespace SpellBreakers_Server.PacketHandlers.Rooms
 {
     public class JoinRoomHandler : IPacketHandler
     {

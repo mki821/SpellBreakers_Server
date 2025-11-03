@@ -31,14 +31,6 @@ namespace SpellBreakers_Server.Udp
 
                 if (packet is UdpPacketBase udpPacket)
                 {
-                    bool isValidToken = Users.AuthenticationManager.Instance.IsValidToken(udpPacket.Token);
-                    if (!isValidToken)
-                    {
-                        Console.WriteLine($"[서버] 유효하지 않은 토큰 : {udpPacket.Token}");
-
-                        continue;
-                    }
-
                     User? user = UserManager.Instance.GetByToken(udpPacket.Token);
                     if (user == null)
                     {

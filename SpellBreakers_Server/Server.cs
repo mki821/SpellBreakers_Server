@@ -1,5 +1,6 @@
 ﻿using SpellBreakers_Server.Packet;
-using SpellBreakers_Server.PacketHandlers;
+using SpellBreakers_Server.PacketHandlers.Auth;
+using SpellBreakers_Server.PacketHandlers.Rooms;
 using SpellBreakers_Server.Tcp;
 using SpellBreakers_Server.Udp;
 
@@ -15,6 +16,7 @@ namespace SpellBreakers_Server
 
             PacketHandler.Register(PacketId.Register, new RegisterHandler());
             PacketHandler.Register(PacketId.Login, new LoginHandler());
+            PacketHandler.Register(PacketId.AutoLogin, new AutoLoginHandler());
             PacketHandler.Register(PacketId.UdpConnect, new UdpConnectHandler());
 
             PacketHandler.Register(PacketId.ListRoom, new ListRoomHandler());

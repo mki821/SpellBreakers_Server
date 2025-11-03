@@ -8,6 +8,7 @@
         RegisterResponse,
 
         Login,
+        AutoLogin,
         LoginResponse,
 
         UdpConnect,

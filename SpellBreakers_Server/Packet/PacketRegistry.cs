@@ -10,6 +10,7 @@
             { (ushort)PacketId.RegisterResponse, typeof(RegisterResponsePacket) },
 
             { (ushort)PacketId.Login, typeof(LoginPacket) },
+            { (ushort)PacketId.AutoLogin, typeof(AutoLoginPacket) },
             { (ushort)PacketId.LoginResponse, typeof(LoginResponsePacket) },
 
             { (ushort)PacketId.UdpConnect, typeof(UdpConnectPacket) },

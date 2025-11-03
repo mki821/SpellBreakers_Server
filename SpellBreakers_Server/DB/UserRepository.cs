@@ -33,7 +33,7 @@ namespace SpellBreakers_Server.DB
 
         private static void CreateUserTokens(SqliteConnection connection)
         {
-            string query = @"CREATE TABLE IF NOT EXISTS UserTokens (ID INTEGER PRIMARY KEY AUTOINCREMENT, UserID TEXT NOT NULL, Token TEXT NOT NULL, Expiry DATETIME NOT NULL,
+            string query = @"CREATE TABLE IF NOT EXISTS UserTokens (ID INTEGER PRIMARY KEY AUTOINCREMENT, UserID TEXT NOT NULL UNIQUE, Token TEXT NOT NULL, Expiry DATETIME NOT NULL,
                                 FOREIGN KEY(UserID) REFERENCES Users(ID))";
 
             using SqliteCommand cmd = new SqliteCommand(query, connection);
@@ -93,7 +93,7 @@ namespace SpellBreakers_Server.DB
             string token = Guid.NewGuid().ToString();
             DateTime expiry = DateTime.UtcNow.AddDays(30);
 
-            string insert = @"INSERT INTO UserTokens (UserID, Token, Expiry) Values (@id, @token, @expiry)";
+            string insert = @"INSERT INTO UserTokens (UserID, Token, Expiry) VALUES (@id, @token, @expiry) ON CONFLICT (UserID) DO UPDATE SET Token=@token, Expiry=@expiry";
 
             using SqliteCommand insertCmd = new SqliteCommand(insert, connection);
             insertCmd.Parameters.AddWithValue("@id", id);
@@ -176,11 +176,8 @@ namespace SpellBreakers_Server.DB
             cmd.Parameters.AddWithValue("@id", id);
 
             object? result = cmd.ExecuteScalar();
-            if (result == null) return null;
 
-            string? nickname = Convert.ToString(result);
-
-            return nickname;
+            return result?.ToString();
         }
     }
 }

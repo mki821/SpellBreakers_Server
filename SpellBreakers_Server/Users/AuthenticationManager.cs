@@ -69,7 +69,7 @@ namespace SpellBreakers_Server.Users
 
             string nickname = _userRepository.GetNicknameByID(login.UserID) ?? string.Empty;
 
-            User user = new User(token, nickname, login.UserID, socket);
+            User user = new User(token, login.UserID, nickname, socket);
             UserManager.Instance.AddOrUpdate(user);
 
             response.Success = true;
@@ -110,10 +110,10 @@ namespace SpellBreakers_Server.Users
                 return;
             }
 
-            string id = _userRepository.GetIDByToken(login.Token) ?? string.Empty;
+            string id = _userRepository.GetIDByToken(token) ?? string.Empty;
             string nickname = _userRepository.GetNicknameByID(id) ?? string.Empty;
 
-            User user = new User(token, nickname, id, socket);
+            User user = new User(token, id, nickname, socket);
             UserManager.Instance.AddOrUpdate(user);
 
             response.Success = true;

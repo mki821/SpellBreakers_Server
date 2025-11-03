@@ -7,6 +7,7 @@ namespace SpellBreakers_Server.Packet
     {
         public override ushort ID => (ushort)PacketId.ListRoom;
     }
+
     [MessagePackObject]
     public class ListRoomResponsePacket : PacketBase
     {

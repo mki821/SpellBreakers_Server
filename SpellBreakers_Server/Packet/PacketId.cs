@@ -26,6 +26,10 @@
         SwitchRole,
         SwitchRoleResponse,
 
+        Ready,
+        ReadyResponse,
+        StartGame,
+
         Move
     }
 }

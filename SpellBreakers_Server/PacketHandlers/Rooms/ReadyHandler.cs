@@ -4,21 +4,17 @@ using SpellBreakers_Server.Users;
 
 namespace SpellBreakers_Server.PacketHandlers.Rooms
 {
-    public class ChatHandler : IPacketHandler
+    public class ReadyHandler : IPacketHandler
     {
         public async Task HandleAsync(Socket socket, PacketBase packet)
         {
-            if (packet is ChatPacket chat)
+            if (packet is ReadyPacket ready)
             {
                 User? user = UserManager.Instance.GetBySocket(socket);
                 if (user == null) return;
+                if(user.CurrentRoom == null) return;
 
-                if(user.CurrentRoom != null)
-                {
-                    chat.Sender = user.Nickname;
-
-                    await user.CurrentRoom.Broadcast(chat);
-                }
+                await user.CurrentRoom.Ready(user);
             }
         }
     }

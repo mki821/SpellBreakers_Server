@@ -2,26 +2,29 @@
 using SpellBreakers_Server.Tcp;
 using SpellBreakers_Server.Udp;
 using SpellBreakers_Server.Users;
-using System.Net;
+using System;
 
 namespace SpellBreakers_Server.Rooms
 {
     public class Room
     {
-        private List<User> _players = new List<User>();
-        private List<User> _spectators = new List<User>();
+        private readonly List<RoomMember> _players = new List<RoomMember>();
+        private readonly List<RoomMember> _spectators = new List<RoomMember>();
+        private readonly Dictionary<string, RoomMember> _roomMembers = new Dictionary<string, RoomMember>();
 
         public ushort ID { get; set; }
         public string Name { get; set; }
         public string Password { get; set; }
 
-        private object _locker = new object();
+        private readonly Lock _locker = new Lock();
 
         private const int MaxPlayerCount = 2;
         private const int MaxSpectatorCount = 4;
 
         public int PlayerCount => _players.Count;
         public int SpectatorCount => _spectators.Count;
+
+        private CancellationTokenSource? _startCountdownCts = null;
 
         public Room(string name, string password)
         {
@@ -49,12 +52,18 @@ namespace SpellBreakers_Server.Rooms
             {
                 if (PlayerCount < MaxPlayerCount)
                 {
-                    _players.Add(user);
+                    RoomMember member = new RoomMember(user);
+                    _players.Add(member);
+                    _roomMembers.Add(user.ID, member);
+
                     success = true;
                 }
                 else if (SpectatorCount < MaxSpectatorCount)
                 {
-                    _spectators.Add(user);
+                    RoomMember member = new RoomMember(user);
+                    _spectators.Add(member);
+                    _roomMembers.Add(user.ID, member);
+
                     success = true;
                 }
             }
@@ -67,10 +76,7 @@ namespace SpellBreakers_Server.Rooms
                 await TcpPacketHelper.SendAsync(user.TcpSocket, response);
                 await UpdateRoomInfo();
 
-                ChatPacket chat = new ChatPacket
-                {
-                    Message = $"{user.Nickname} 님이 참가하였습니다."
-                };
+                ChatPacket chat = new ChatPacket { Message = $"{user.Nickname} 님이 참가하였습니다." };
 
                 await Broadcast(chat);
             }
@@ -85,10 +91,15 @@ namespace SpellBreakers_Server.Rooms
 
         public async Task Leave(User user)
         {
+            if(!_roomMembers.TryGetValue(user.ID, out RoomMember? member) || member == null)
+            {
+                return;
+            }
+
             lock (_locker)
             {
-                _players.Remove(user);
-                _spectators.Remove(user);
+                _players.Remove(member);
+                _spectators.Remove(member);
             }
 
             if(_players.Count == 0 && _spectators.Count == 0)
@@ -102,10 +113,7 @@ namespace SpellBreakers_Server.Rooms
             await TcpPacketHelper.SendAsync(user.TcpSocket, response);
             await UpdateRoomInfo();
 
-            ChatPacket chat = new ChatPacket
-            {
-                Message = $"{user.Nickname} 님이 퇴장하였습니다."
-            };
+            ChatPacket chat = new ChatPacket { Message = $"{user.Nickname} 님이 퇴장하였습니다." };
 
             await Broadcast(chat);
         }
@@ -116,12 +124,14 @@ namespace SpellBreakers_Server.Rooms
 
             lock(_locker)
             {
-                if (_players.Contains(user))
+                RoomMember member = _roomMembers[user.ID];
+
+                if (_players.Contains(member))
                 {
                     if (SpectatorCount < MaxSpectatorCount)
                     {
-                        _players.Remove(user);
-                        _spectators.Add(user);
+                        _players.Remove(member);
+                        _spectators.Add(member);
 
                         response.Success = true;
                     }
@@ -131,12 +141,12 @@ namespace SpellBreakers_Server.Rooms
                         response.Message = "관전석이 가득 찼습니다!";
                     }
                 }
-                else if (_spectators.Contains(user))
+                else if (_spectators.Contains(member))
                 {
                     if (PlayerCount < MaxPlayerCount)
                     {
-                        _spectators.Remove(user);
-                        _players.Add(user);
+                        _spectators.Remove(member);
+                        _players.Add(member);
 
                         response.Success = true;
                     }
@@ -156,18 +166,76 @@ namespace SpellBreakers_Server.Rooms
             }
         }
 
+        public async Task Ready(User user)
+        {
+            ReadyResponsePacket response = new ReadyResponsePacket();
+
+            lock (_locker)
+            {
+                _roomMembers[user.ID].IsReady = !_roomMembers[user.ID].IsReady;
+
+                if (_startCountdownCts != null && !_roomMembers[user.ID].IsReady)
+                {
+                    _startCountdownCts.Cancel();
+                    _startCountdownCts = null;
+                }
+
+                bool allReady = _roomMembers.Values.All(member => member.IsReady);
+
+                if (allReady && _startCountdownCts == null)
+                {
+                    _startCountdownCts = new CancellationTokenSource();
+                    _ = StartCountdownAsync();
+                }
+            }
+
+            response.IsReady = _roomMembers[user.ID].IsReady;
+
+            await TcpPacketHelper.SendAsync(user.TcpSocket, response);
+            await UpdateRoomInfo();
+        }
+
+        private async Task StartCountdownAsync()
+        {
+            if (_startCountdownCts == null) return;
+
+            ChatPacket chat = new ChatPacket();
+
+            try
+            {
+                for(int i = 5; i > 0; --i)
+                {
+                    chat.Message = $"{i}초 뒤 게임이 시작합니다.";
+
+                    await Broadcast(chat);
+
+                    await Task.Delay(1000, _startCountdownCts.Token);
+                }
+
+                StartGamePacket packet = new StartGamePacket();
+
+                await Broadcast(packet);
+            }
+            catch (TaskCanceledException)
+            {
+                chat.Message = $"카운트다운이 취소되었습니다.";
+
+                await Broadcast(chat);
+            }
+        }
+
         public async Task UpdateRoomInfo()
         {
             RoomInfoPacket packet = new RoomInfoPacket();
 
             for (int i = 0; i < PlayerCount; ++i)
             {
-                packet.Players.Add(new UserElement { Nickname = _players[i].Nickname ?? string.Empty });
+                packet.Players.Add(new UserElement { Nickname = _players[i].User.Nickname, IsReady = _players[i].IsReady });
             }
 
             for (int i = 0; i < SpectatorCount; ++i)
             {
-                packet.Spectators.Add(new UserElement { Nickname = _spectators[i].Nickname ?? string.Empty });
+                packet.Spectators.Add(new UserElement { Nickname = _spectators[i].User.Nickname, IsReady = _spectators[i].IsReady });
             }
 
             await Broadcast(packet);
@@ -175,25 +243,28 @@ namespace SpellBreakers_Server.Rooms
 
         public async Task Broadcast<T>(T packet) where T : PacketBase
         {
-            List<Task> tasks = new List<Task>();
-
-            lock(_locker)
+            await BroadcastInternal(packet, member =>
             {
-                for (int i = 0; i < PlayerCount; ++i)
-                {
-                    tasks.Add(TcpPacketHelper.SendAsync(_players[i].TcpSocket, packet));
-                }
-
-                for (int i = 0; i < SpectatorCount; ++i)
-                {
-                    tasks.Add(TcpPacketHelper.SendAsync(_spectators[i].TcpSocket, packet));
-                }
-            }
-
-            await Task.WhenAll(tasks);
+                return TcpPacketHelper.SendAsync(member.User.TcpSocket, packet);
+            });
         }
 
         public async Task BroadcastUdp<T>(T packet) where T : UdpPacketBase
+        {
+            await BroadcastInternal(packet, member =>
+            {
+                User user = member.User;
+
+                if (user.UdpEndPoint != null)
+                {
+                    return UdpPacketHelper.SendAsync(user.UdpEndPoint, packet);
+                }
+
+                return Task.CompletedTask;
+            });
+        }
+
+        private async Task BroadcastInternal<T>(T packet, Func<RoomMember, Task> func) where T : PacketBase
         {
             List<Task> tasks = new List<Task>();
 
@@ -201,22 +272,12 @@ namespace SpellBreakers_Server.Rooms
             {
                 for (int i = 0; i < PlayerCount; ++i)
                 {
-                    User user = _players[i];
-
-                    if (user.UdpEndPoint != null)
-                    {
-                        tasks.Add(UdpPacketHelper.SendAsync(user.UdpEndPoint, packet));
-                    }
+                    tasks.Add(func(_players[i]));
                 }
 
                 for (int i = 0; i < SpectatorCount; ++i)
                 {
-                    User user = _spectators[i];
-
-                    if (user.UdpEndPoint != null)
-                    {
-                        tasks.Add(UdpPacketHelper.SendAsync(user.UdpEndPoint, packet));
-                    }
+                    tasks.Add(func(_spectators[i]));
                 }
             }
 

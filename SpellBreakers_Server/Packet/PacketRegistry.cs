@@ -24,10 +24,13 @@
             { (ushort)PacketId.LeaveRoomResponse, typeof(LeaveRoomResponsePacket) },
 
             { (ushort)PacketId.RoomInfo, typeof(RoomInfoPacket) },
+            { (ushort)PacketId.Chat, typeof(ChatPacket) },
             { (ushort)PacketId.SwitchRole, typeof(SwitchRolePacket) },
             { (ushort)PacketId.SwitchRoleResponse, typeof(SwitchRoleResponsePacket) },
 
-            { (ushort)PacketId.Chat, typeof(ChatPacket) },
+            { (ushort)PacketId.Ready, typeof(ReadyPacket) },
+            { (ushort)PacketId.ReadyResponse, typeof(ReadyResponsePacket) },
+            { (ushort)PacketId.StartGame, typeof(StartGamePacket) },
 
             { (ushort)PacketId.Move, typeof(MovePacket) },
         };

@@ -24,9 +24,11 @@ namespace SpellBreakers_Server
             PacketHandler.Register(PacketId.JoinRoom, new JoinRoomHandler());
             PacketHandler.Register(PacketId.LeaveRoom, new LeaveRoomHandler());
 
+            PacketHandler.Register(PacketId.Chat, new ChatHandler());
             PacketHandler.Register(PacketId.SwitchRole, new SwitchRoleHnadler());
 
-            PacketHandler.Register(PacketId.Chat, new ChatHandler());
+            PacketHandler.Register(PacketId.Ready, new ReadyHandler());
+
             PacketHandler.Register(PacketId.Move, new MoveHandler());
         }
 

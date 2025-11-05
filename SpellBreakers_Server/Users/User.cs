@@ -8,8 +8,8 @@ namespace SpellBreakers_Server.Users
     {
         public string Token { get; }
 
-        public string? ID { get; set; }
-        public string? Nickname { get; set; }
+        public string ID { get; set; }
+        public string Nickname { get; set; } = "(Unknown)";
 
         public Socket TcpSocket { get; set; }
         public EndPoint? UdpEndPoint { get; set; }

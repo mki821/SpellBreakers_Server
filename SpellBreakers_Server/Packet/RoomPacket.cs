@@ -76,6 +76,7 @@ namespace SpellBreakers_Server.Packet
     public class UserElement
     {
         [Key(0)] public string Nickname { get; set; } = "";
+        [Key(1)] public bool IsReady { get; set; }
     }
 
     [MessagePackObject]
@@ -98,6 +99,25 @@ namespace SpellBreakers_Server.Packet
         public override ushort ID => (ushort)PacketId.SwitchRoleResponse;
         [Key(1)] public bool Success { get; set; }
         [Key(2)] public string Message { get; set; } = "";
+    }
+
+    [MessagePackObject]
+    public class ReadyPacket : PacketBase
+    {
+        public override ushort ID => (ushort)PacketId.Ready;
+    }
+
+    [MessagePackObject]
+    public class ReadyResponsePacket : PacketBase
+    {
+        public override ushort ID => (ushort)PacketId.ReadyResponse;
+        [Key(1)] public bool IsReady { get; set; }
+    }
+
+    [MessagePackObject]
+    public class StartGamePacket : PacketBase
+    {
+        public override ushort ID => (ushort)PacketId.StartGame;
     }
 
     [MessagePackObject]

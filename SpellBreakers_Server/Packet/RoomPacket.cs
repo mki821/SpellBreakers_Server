@@ -119,12 +119,4 @@ namespace SpellBreakers_Server.Packet
     {
         public override ushort ID => (ushort)PacketId.StartGame;
     }
-
-    [MessagePackObject]
-    public class MovePacket : UdpPacketBase
-    {
-        public override ushort ID => (ushort)PacketId.Move;
-        [Key(2)] public float X { get; set; }
-        [Key(3)] public float Y { get; set; }
-    }
 }

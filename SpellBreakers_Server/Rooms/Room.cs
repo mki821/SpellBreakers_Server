@@ -1,8 +1,8 @@
-﻿using SpellBreakers_Server.Packet;
+﻿using SpellBreakers_Server.GameSystem;
+using SpellBreakers_Server.Packet;
 using SpellBreakers_Server.Tcp;
 using SpellBreakers_Server.Udp;
 using SpellBreakers_Server.Users;
-using System;
 
 namespace SpellBreakers_Server.Rooms
 {
@@ -15,21 +15,24 @@ namespace SpellBreakers_Server.Rooms
         public ushort ID { get; set; }
         public string Name { get; set; }
         public string Password { get; set; }
+        public bool IsPlaying { get; private set; }
+        public Game Game { get; set; }
 
         private readonly Lock _locker = new Lock();
 
         private const int MaxPlayerCount = 2;
         private const int MaxSpectatorCount = 4;
 
+        private CancellationTokenSource? _startCountdownCts = null;
+
         public int PlayerCount => _players.Count;
         public int SpectatorCount => _spectators.Count;
-
-        private CancellationTokenSource? _startCountdownCts = null;
 
         public Room(string name, string password)
         {
             Name = name;
             Password = password;
+            Game = new Game(this);
         }
 
         public async Task TryJoin(User user, string password)
@@ -100,6 +103,7 @@ namespace SpellBreakers_Server.Rooms
             {
                 _players.Remove(member);
                 _spectators.Remove(member);
+                _roomMembers.Remove(user.ID);
             }
 
             if(_players.Count == 0 && _spectators.Count == 0)
@@ -116,6 +120,11 @@ namespace SpellBreakers_Server.Rooms
             ChatPacket chat = new ChatPacket { Message = $"{user.Nickname} 님이 퇴장하였습니다." };
 
             await Broadcast(chat);
+
+            if (IsPlaying)
+            {
+                Game.End();
+            }
         }
 
         public async Task SwitchRole(User user)
@@ -215,6 +224,9 @@ namespace SpellBreakers_Server.Rooms
                 StartGamePacket packet = new StartGamePacket();
 
                 await Broadcast(packet);
+
+                IsPlaying = true;
+                Game.Start(_players[0].User.Token, _players[1].User.Token);
             }
             catch (TaskCanceledException)
             {

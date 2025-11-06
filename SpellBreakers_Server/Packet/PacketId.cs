@@ -30,6 +30,7 @@
         ReadyResponse,
         StartGame,
 
-        Move
+        EntityInfo,
+        Move,
     }
 }

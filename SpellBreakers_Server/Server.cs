@@ -1,5 +1,6 @@
 ﻿using SpellBreakers_Server.Packet;
 using SpellBreakers_Server.PacketHandlers.Auth;
+using SpellBreakers_Server.PacketHandlers.Games;
 using SpellBreakers_Server.PacketHandlers.Rooms;
 using SpellBreakers_Server.Tcp;
 using SpellBreakers_Server.Udp;

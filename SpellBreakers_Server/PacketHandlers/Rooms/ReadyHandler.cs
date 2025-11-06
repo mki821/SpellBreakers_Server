@@ -8,7 +8,7 @@ namespace SpellBreakers_Server.PacketHandlers.Rooms
     {
         public async Task HandleAsync(Socket socket, PacketBase packet)
         {
-            if (packet is ReadyPacket ready)
+            if (packet is ReadyPacket)
             {
                 User? user = UserManager.Instance.GetBySocket(socket);
                 if (user == null) return;

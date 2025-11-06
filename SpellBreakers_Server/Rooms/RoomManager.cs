@@ -23,7 +23,7 @@ namespace SpellBreakers_Server.Rooms
                     ID = room.ID,
                     Name = room.Name,
                     Locked = room.Password != "",
-                    Playing = false,
+                    Playing = room.IsPlaying,
                     Players = (ushort)room.PlayerCount,
                     Spectators = (ushort)room.SpectatorCount
                 };

@@ -2,7 +2,7 @@
 using SpellBreakers_Server.Packet;
 using SpellBreakers_Server.Users;
 
-namespace SpellBreakers_Server.PacketHandlers.Rooms
+namespace SpellBreakers_Server.PacketHandlers.Games
 {
     public class MoveHandler : IPacketHandler
     {
@@ -13,10 +13,7 @@ namespace SpellBreakers_Server.PacketHandlers.Rooms
                 User? user = UserManager.Instance.GetBySocket(socket);
                 if (user == null) return;
 
-                if (user.CurrentRoom != null)
-                {
-                    await user.CurrentRoom.BroadcastUdp(move);
-                }
+                user.CurrentRoom?.Game.Move(move);
             }
         }
     }

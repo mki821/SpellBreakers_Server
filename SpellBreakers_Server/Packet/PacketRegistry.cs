@@ -32,6 +32,7 @@
             { (ushort)PacketId.ReadyResponse, typeof(ReadyResponsePacket) },
             { (ushort)PacketId.StartGame, typeof(StartGamePacket) },
 
+            { (ushort)PacketId.EntityInfo, typeof(EntityInfoPacket) },
             { (ushort)PacketId.Move, typeof(MovePacket) },
         };
 

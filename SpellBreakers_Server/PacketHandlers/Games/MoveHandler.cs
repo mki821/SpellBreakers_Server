@@ -6,15 +6,17 @@ namespace SpellBreakers_Server.PacketHandlers.Games
 {
     public class MoveHandler : IPacketHandler
     {
-        public async Task HandleAsync(Socket socket, PacketBase packet)
+        public Task HandleAsync(Socket socket, PacketBase packet)
         {
             if (packet is MovePacket move)
             {
                 User? user = UserManager.Instance.GetBySocket(socket);
-                if (user == null) return;
+                if (user == null) return Task.CompletedTask;
 
                 user.CurrentRoom?.Game.Move(move);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

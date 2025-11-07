@@ -39,7 +39,16 @@ namespace SpellBreakers_Server.Rooms
         {
             JoinRoomResponsePacket response = new JoinRoomResponsePacket();
 
-            if(!string.Equals(password, Password))
+            if (IsPlaying)
+            {
+                response.Success = false;
+                response.Message = "방 참가 실패 : 이미 게임이 시작된 방입니다!";
+
+                await TcpPacketHelper.SendAsync(user.TcpSocket, response);
+
+                return;
+            }
+            else if(!string.Equals(password, Password))
             {
                 response.Success = false;
                 response.Message = "방 참가 실패 : 비밀번호가 틀렸습니다!";
@@ -189,7 +198,7 @@ namespace SpellBreakers_Server.Rooms
                     _startCountdownCts = null;
                 }
 
-                bool allReady = _roomMembers.Values.All(member => member.IsReady);
+                bool allReady = _players.Count == MaxPlayerCount && _players.All(member => member.IsReady);
 
                 if (allReady && _startCountdownCts == null)
                 {

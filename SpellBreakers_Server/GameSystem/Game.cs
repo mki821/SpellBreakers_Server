@@ -1,12 +1,13 @@
 ﻿using SpellBreakers_Server.Packet;
 using SpellBreakers_Server.Rooms;
+using System.Diagnostics;
 
 namespace SpellBreakers_Server.GameSystem
 {
-    public class Game
+    public class Game : IDisposable
     {
         private Room _room;
-        private Dictionary<string, EntityInfo> _entityInfos = new Dictionary<string, EntityInfo>();
+        private Dictionary<string, Entity> _entities = new Dictionary<string, Entity>();
 
         private CancellationTokenSource _cts;
 
@@ -16,25 +17,30 @@ namespace SpellBreakers_Server.GameSystem
             _cts = new CancellationTokenSource();
         }
 
-        public void Start(string token1, string token2)
+        public void Dispose()
         {
-            CreateCharacter(token1, 10.0f, 0.0f);
-            CreateCharacter(token2, -10.0f, 0.0f);
-
-            _ = UpdateAsync();
+            _cts.Cancel();
+            _cts.Dispose();
         }
 
-        private void CreateCharacter(string id, float x, float y)
+        public void Start(string token1, string token2)
         {
-            EntityInfo newInfo = new EntityInfo
+            AddCharacter(token1, 10.0f, 0.0f, 0.0f);
+            AddCharacter(token2, -10.0f, 0.0f, 0.0f);
+
+            _ = Task.Run(UpdateAsync);
+        }
+
+        private void AddCharacter(string id, float x, float y, float z)
+        {
+            Entity entity = new Entity
             {
                 EntityType = (ushort)EntityType.Character,
                 EntityID = id,
-                X = y,
-                Y = x
+                Position = new Vector(x, y, z)
             };
 
-            _entityInfos.Add(newInfo.EntityID, newInfo);
+            _entities.Add(id, entity);
         }
 
         public void End()
@@ -44,13 +50,21 @@ namespace SpellBreakers_Server.GameSystem
 
         private async Task UpdateAsync()
         {
+            CancellationToken token = _cts.Token;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
             try
             {
-                while(true)
+                while(!token.IsCancellationRequested)
                 {
+                    float deltaTime = (float)stopwatch.Elapsed.TotalSeconds;
+                    stopwatch.Restart();
+
+                    UpdateMovement(deltaTime);
+
                     EntityInfoPacket packet = new EntityInfoPacket
                     {
-                        Entities = _entityInfos.Values.ToList()
+                        Entities = _entities.Values
                     };
 
                     await _room.BroadcastUdp(packet);
@@ -61,6 +75,45 @@ namespace SpellBreakers_Server.GameSystem
             catch(TaskCanceledException)
             {
 
+            }
+        }
+
+        public void UpdateMovement(float deltaTime)
+        {
+            foreach(Entity entity in _entities.Values)
+            {
+                if (!entity.IsMoving) continue;
+
+                Vector direction = entity.TargetPosition - entity.Position;
+                float distance = direction.Magnitude;
+
+                if(distance < 0.01f)
+                {
+                    entity.Position = entity.TargetPosition;
+                    entity.IsMoving = false;
+
+                    continue;
+                }
+
+                float moveDistance = entity.Speed * deltaTime;
+                if(moveDistance >= distance)
+                {
+                    entity.Position = entity.TargetPosition;
+                    entity.IsMoving = false;
+                }
+                else
+                {
+                    entity.Position += direction.Normalized * moveDistance;
+                }
+            }
+        }
+
+        public void Move(MovePacket packet)
+        {
+            if(_entities.TryGetValue(packet.Token, out Entity? entity))
+            {
+                entity.TargetPosition = packet.TargetPosition;
+                entity.IsMoving = true;
             }
         }
     }

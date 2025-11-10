@@ -31,6 +31,7 @@ namespace SpellBreakers_Server
             PacketHandler.Register(PacketId.Ready, new ReadyHandler());
 
             PacketHandler.Register(PacketId.Move, new MoveHandler());
+            PacketHandler.Register(PacketId.FireProjectile, new FireProjectileHandler());
         }
 
         public async Task StartAsync()

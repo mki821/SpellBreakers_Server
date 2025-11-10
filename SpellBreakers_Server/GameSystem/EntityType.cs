@@ -2,6 +2,7 @@
 {
     public enum EntityType
     {
-        Character
+        Character,
+        Projectile
     }
 }

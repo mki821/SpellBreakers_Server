@@ -25,22 +25,39 @@ namespace SpellBreakers_Server.GameSystem
 
         public void Start(string token1, string token2)
         {
-            AddCharacter(token1, 10.0f, 0.0f, 0.0f);
-            AddCharacter(token2, -10.0f, 0.0f, 0.0f);
+            AddEntity(EntityType.Character, token1, 10.0f, 0.0f, 0.0f);
+            AddEntity(EntityType.Character, token2, -10.0f, 0.0f, 0.0f);
 
             _ = Task.Run(UpdateAsync);
         }
 
-        private void AddCharacter(string id, float x, float y, float z)
+        private Entity AddEntity(EntityType type, string id, float x, float y, float z)
         {
-            Entity entity = new Entity
+            Entity entity = type switch
             {
-                EntityType = (ushort)EntityType.Character,
-                EntityID = id,
-                Position = new Vector(x, y, z)
+                EntityType.Character => new Character
+                {
+                    EntityType = (ushort)type,
+                    EntityID = id,
+                    Position = new Vector(x, y, z)
+                },
+                EntityType.Projectile => new Projectile
+                {
+                    EntityType = (ushort)type,
+                    EntityID = id,
+                    Position = new Vector(x, y, z)
+                },
+                _ => new Entity
+                {
+                    EntityType = (ushort)type,
+                    EntityID = id,
+                    Position = new Vector(x, y, z)
+                }
             };
 
             _entities.Add(id, entity);
+
+            return entity;
         }
 
         public void End()
@@ -60,7 +77,17 @@ namespace SpellBreakers_Server.GameSystem
                     float deltaTime = (float)stopwatch.Elapsed.TotalSeconds;
                     stopwatch.Restart();
 
-                    UpdateMovement(deltaTime);
+                    List<string> deadEntityIds = new List<string>();
+
+                    foreach (Entity entity in _entities.Values)
+                    {
+                        if (entity.IsDead)
+                        {
+                            deadEntityIds.Add(entity.EntityID);
+                        }
+
+                        entity.Update(deltaTime);
+                    }
 
                     EntityInfoPacket packet = new EntityInfoPacket
                     {
@@ -68,6 +95,11 @@ namespace SpellBreakers_Server.GameSystem
                     };
 
                     await _room.BroadcastUdp(packet);
+
+                    foreach(string id in deadEntityIds)
+                    {
+                        _entities.Remove(id);
+                    }
 
                     await Task.Delay(33, _cts.Token);
                 }
@@ -78,36 +110,6 @@ namespace SpellBreakers_Server.GameSystem
             }
         }
 
-        public void UpdateMovement(float deltaTime)
-        {
-            foreach(Entity entity in _entities.Values)
-            {
-                if (!entity.IsMoving) continue;
-
-                Vector direction = entity.TargetPosition - entity.Position;
-                float distance = direction.Magnitude;
-
-                if(distance < 0.01f)
-                {
-                    entity.Position = entity.TargetPosition;
-                    entity.IsMoving = false;
-
-                    continue;
-                }
-
-                float moveDistance = entity.Speed * deltaTime;
-                if(moveDistance >= distance)
-                {
-                    entity.Position = entity.TargetPosition;
-                    entity.IsMoving = false;
-                }
-                else
-                {
-                    entity.Position += direction.Normalized * moveDistance;
-                }
-            }
-        }
-
         public void Move(MovePacket packet)
         {
             if(_entities.TryGetValue(packet.Token, out Entity? entity))
@@ -115,6 +117,15 @@ namespace SpellBreakers_Server.GameSystem
                 entity.TargetPosition = packet.TargetPosition;
                 entity.IsMoving = true;
             }
+        }
+
+        public void FireProjectile(FireProjectilePacket packet)
+        {
+            string id = Guid.NewGuid().ToString();
+            Vector spawnPosition = packet.SpawnPosition;
+
+            Entity projectile = AddEntity(EntityType.Projectile, id, spawnPosition.X, spawnPosition.Y, spawnPosition.Z);
+            projectile.TargetPosition = packet.TargetPosition;
         }
     }
 }

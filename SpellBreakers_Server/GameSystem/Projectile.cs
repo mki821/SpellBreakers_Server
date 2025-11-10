@@ -2,31 +2,26 @@
 
 namespace SpellBreakers_Server.GameSystem
 {
-    public class Entity : EntityInfo
+    public class Projectile : Entity
     {
-        public Vector TargetPosition { get; set; }
-        public virtual float Speed { get; set; }
+        public override float Speed => 15.0f;
 
-        public virtual void Update(float deltaTime)
+        public override void Update(float deltaTime)
         {
-            if (Speed == 0 || !IsMoving) return;
-
             Vector direction = TargetPosition - Position;
             float distance = direction.Magnitude;
 
             if (distance < 0.01f)
             {
                 Position = TargetPosition;
-                IsMoving = false;
-
-                return;
+                IsDead = true;
             }
 
             float moveDistance = Speed * deltaTime;
             if (moveDistance >= distance)
             {
                 Position = TargetPosition;
-                IsMoving = false;
+                IsDead = true;
             }
             else
             {

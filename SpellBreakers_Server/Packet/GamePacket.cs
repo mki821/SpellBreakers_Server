@@ -16,6 +16,8 @@ namespace SpellBreakers_Server.Packet
         [Key(0)] public ushort EntityType { get; set; }
         [Key(1)] public string EntityID { get; set; } = "";
         [Key(2)] public Vector Position { get; set; }
+        [Key(3)] public bool IsMoving { get; set; }
+        [Key(4)] public bool IsDead { get; set; }
     }
 
     [MessagePackObject]
@@ -28,7 +30,7 @@ namespace SpellBreakers_Server.Packet
         [Key(2)] public float Z;
 
         [IgnoreMember] public readonly float Magnitude => MathF.Sqrt(X * X + Y * Y + Z * Z);
-        [IgnoreMember] public Vector Normalized
+        [IgnoreMember] public readonly Vector Normalized
         {
             get
             {
@@ -55,5 +57,13 @@ namespace SpellBreakers_Server.Packet
     {
         public override ushort ID => (ushort)PacketId.Move;
         [Key(2)] public Vector TargetPosition { get; set; }
+    }
+
+    [MessagePackObject]
+    public class FireProjectilePacket : UdpPacketBase
+    {
+        public override ushort ID => (ushort)PacketId.FireProjectile;
+        [Key(2)] public Vector SpawnPosition { get; set; }
+        [Key(3)] public Vector TargetPosition { get; set; }
     }
 }

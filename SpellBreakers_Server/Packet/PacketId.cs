@@ -32,5 +32,6 @@
 
         EntityInfo,
         Move,
+        FireProjectile,
     }
 }

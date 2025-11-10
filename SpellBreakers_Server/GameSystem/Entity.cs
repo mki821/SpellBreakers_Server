@@ -6,6 +6,7 @@ namespace SpellBreakers_Server.GameSystem
     {
         public Vector TargetPosition { get; set; }
         public virtual float Speed { get; set; }
+        public virtual float Radius { get; set; } = 1.0f;
 
         public virtual void Update(float deltaTime)
         {
@@ -32,6 +33,11 @@ namespace SpellBreakers_Server.GameSystem
             {
                 Position += direction.Normalized * moveDistance;
             }
+        }
+
+        public virtual void OnCollision()
+        {
+
         }
     }
 }

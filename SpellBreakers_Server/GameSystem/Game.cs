@@ -6,14 +6,15 @@ namespace SpellBreakers_Server.GameSystem
 {
     public class Game : IDisposable
     {
-        private Room _room;
-        private Dictionary<string, Entity> _entities = new Dictionary<string, Entity>();
+        private readonly Room _room;
+        private readonly EntityManager _entityManager;
 
-        private CancellationTokenSource _cts;
+        private readonly CancellationTokenSource _cts;
 
         public Game(Room room)
         {
             _room = room;
+            _entityManager = new EntityManager();
             _cts = new CancellationTokenSource();
         }
 
@@ -25,39 +26,10 @@ namespace SpellBreakers_Server.GameSystem
 
         public void Start(string token1, string token2)
         {
-            AddEntity(EntityType.Character, token1, 10.0f, 0.0f, 0.0f);
-            AddEntity(EntityType.Character, token2, -10.0f, 0.0f, 0.0f);
+            _entityManager.AddEntity(EntityType.Character, token1, 10.0f, 0.0f, 0.0f);
+            _entityManager.AddEntity(EntityType.Character, token2, -10.0f, 0.0f, 0.0f);
 
             _ = Task.Run(UpdateAsync);
-        }
-
-        private Entity AddEntity(EntityType type, string id, float x, float y, float z)
-        {
-            Entity entity = type switch
-            {
-                EntityType.Character => new Character
-                {
-                    EntityType = (ushort)type,
-                    EntityID = id,
-                    Position = new Vector(x, y, z)
-                },
-                EntityType.Projectile => new Projectile
-                {
-                    EntityType = (ushort)type,
-                    EntityID = id,
-                    Position = new Vector(x, y, z)
-                },
-                _ => new Entity
-                {
-                    EntityType = (ushort)type,
-                    EntityID = id,
-                    Position = new Vector(x, y, z)
-                }
-            };
-
-            _entities.Add(id, entity);
-
-            return entity;
         }
 
         public void End()
@@ -77,29 +49,17 @@ namespace SpellBreakers_Server.GameSystem
                     float deltaTime = (float)stopwatch.Elapsed.TotalSeconds;
                     stopwatch.Restart();
 
-                    List<string> deadEntityIds = new List<string>();
-
-                    foreach (Entity entity in _entities.Values)
-                    {
-                        if (entity.IsDead)
-                        {
-                            deadEntityIds.Add(entity.EntityID);
-                        }
-
-                        entity.Update(deltaTime);
-                    }
+                    _entityManager.Update(deltaTime);
+                    _entityManager.CheckCollision();
 
                     EntityInfoPacket packet = new EntityInfoPacket
                     {
-                        Entities = _entities.Values
+                        Entities = _entityManager.Entities
                     };
 
                     await _room.BroadcastUdp(packet);
 
-                    foreach(string id in deadEntityIds)
-                    {
-                        _entities.Remove(id);
-                    }
+                    _entityManager.RemoveDeadEntities();
 
                     await Task.Delay(33, _cts.Token);
                 }
@@ -112,7 +72,7 @@ namespace SpellBreakers_Server.GameSystem
 
         public void Move(MovePacket packet)
         {
-            if(_entities.TryGetValue(packet.Token, out Entity? entity))
+            if(_entityManager.TryGetValue(packet.Token, out Entity? entity))
             {
                 entity.TargetPosition = packet.TargetPosition;
                 entity.IsMoving = true;
@@ -124,7 +84,7 @@ namespace SpellBreakers_Server.GameSystem
             string id = Guid.NewGuid().ToString();
             Vector spawnPosition = packet.SpawnPosition;
 
-            Entity projectile = AddEntity(EntityType.Projectile, id, spawnPosition.X, spawnPosition.Y, spawnPosition.Z);
+            Entity projectile = _entityManager.AddEntity(EntityType.Projectile, id, spawnPosition.X, spawnPosition.Y, spawnPosition.Z);
             projectile.TargetPosition = packet.TargetPosition;
         }
     }

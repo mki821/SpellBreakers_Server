@@ -28,5 +28,10 @@ namespace SpellBreakers_Server.GameSystem
                 Position += direction.Normalized * moveDistance;
             }
         }
+
+        public override void OnCollision()
+        {
+            IsDead = true;
+        }
     }
 }

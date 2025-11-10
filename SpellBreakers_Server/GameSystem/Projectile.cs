@@ -6,19 +6,15 @@ namespace SpellBreakers_Server.GameSystem
     {
         public override float Speed => 15.0f;
 
+        public string OwnerID { get; set; } = "";
+
         public override void Update(float deltaTime)
         {
             Vector direction = TargetPosition - Position;
             float distance = direction.Magnitude;
-
-            if (distance < 0.01f)
-            {
-                Position = TargetPosition;
-                IsDead = true;
-            }
-
             float moveDistance = Speed * deltaTime;
-            if (moveDistance >= distance)
+
+            if (distance <= moveDistance || distance < 0.01f)
             {
                 Position = TargetPosition;
                 IsDead = true;
@@ -29,9 +25,12 @@ namespace SpellBreakers_Server.GameSystem
             }
         }
 
-        public override void OnCollision()
+        public override void OnCollision(Entity other)
         {
-            IsDead = true;
+            if(other.EntityType == (ushort)GameSystem.EntityType.Character && other.EntityID != OwnerID)
+            {
+                IsDead = true;
+            }
         }
     }
 }

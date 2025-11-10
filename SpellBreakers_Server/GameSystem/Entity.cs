@@ -35,7 +35,7 @@ namespace SpellBreakers_Server.GameSystem
             }
         }
 
-        public virtual void OnCollision()
+        public virtual void OnCollision(Entity other)
         {
 
         }

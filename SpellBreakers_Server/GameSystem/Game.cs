@@ -84,8 +84,9 @@ namespace SpellBreakers_Server.GameSystem
             string id = Guid.NewGuid().ToString();
             Vector spawnPosition = packet.SpawnPosition;
 
-            Entity projectile = _entityManager.AddEntity(EntityType.Projectile, id, spawnPosition.X, spawnPosition.Y, spawnPosition.Z);
+            Projectile projectile = (Projectile)_entityManager.AddEntity(EntityType.Projectile, id, spawnPosition.X, spawnPosition.Y, spawnPosition.Z);
             projectile.TargetPosition = packet.TargetPosition;
+            projectile.OwnerID = packet.OwnerID;
         }
     }
 }

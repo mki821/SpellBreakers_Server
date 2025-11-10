@@ -67,8 +67,8 @@ namespace SpellBreakers_Server.GameSystem
 
                     if (dx * dx + dy * dy + dz * dz < radiusSum * radiusSum)
                     {
-                        a.OnCollision();
-                        b.OnCollision();
+                        a.OnCollision(b);
+                        b.OnCollision(a);
                     }
                 }
             }
@@ -76,13 +76,19 @@ namespace SpellBreakers_Server.GameSystem
 
         public void RemoveDeadEntities()
         {
-            IEnumerable<string> ids = _entities.Keys;
-            foreach(string id in ids)
+            List<string> ids = [];
+
+            foreach (Entity entity in _entities.Values)
             {
-                if (_entities[id].IsDead)
+                if(entity.IsDead)
                 {
-                    _entities.Remove(id);
+                    ids.Add(entity.EntityID);
                 }
+            }
+
+            for (int i = 0; i < ids.Count; ++i)
+            {
+                _entities.Remove(ids[i]);
             }
         }
     }

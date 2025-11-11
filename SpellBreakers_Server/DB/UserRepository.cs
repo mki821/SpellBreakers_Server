@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 
 namespace SpellBreakers_Server.DB
 {
-    class UserRepository
+    public class UserRepository
     {
         private readonly string _connectionString;
 

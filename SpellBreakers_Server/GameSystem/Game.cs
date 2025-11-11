@@ -1,6 +1,7 @@
-﻿using SpellBreakers_Server.Packet;
+﻿using System.Diagnostics;
+using SpellBreakers_Server.GameSystem.Entities;
+using SpellBreakers_Server.Packet;
 using SpellBreakers_Server.Rooms;
-using System.Diagnostics;
 
 namespace SpellBreakers_Server.GameSystem
 {
@@ -26,8 +27,8 @@ namespace SpellBreakers_Server.GameSystem
 
         public void Start(string token1, string token2)
         {
-            _entityManager.AddEntity(EntityType.Character, token1, 10.0f, 0.0f, 0.0f);
-            _entityManager.AddEntity(EntityType.Character, token2, -10.0f, 0.0f, 0.0f);
+            _entityManager.AddCharacter(CharacterType.Magician, token1, new Vector(10.0f, 0.0f, 0.0f));
+            _entityManager.AddCharacter(CharacterType.Magician, token2, new Vector(-10.0f, 0.0f, 0.0f));
 
             _ = Task.Run(UpdateAsync);
         }
@@ -58,7 +59,7 @@ namespace SpellBreakers_Server.GameSystem
                     EntityInfoPacket packet = new EntityInfoPacket
                     {
                         Tick = currentTick,
-                        Entities = _entityManager.Entities
+                        Entities = _entityManager.Entities.Select(entity => entity.EntityInfo)
                     };
 
                     await _room.BroadcastUdp(packet);
@@ -79,7 +80,7 @@ namespace SpellBreakers_Server.GameSystem
             if(_entityManager.TryGetValue(packet.Token, out Entity? entity))
             {
                 entity.TargetPosition = packet.TargetPosition;
-                entity.IsMoving = true;
+                entity.EntityInfo.IsMoving = true;
             }
         }
 
@@ -88,7 +89,7 @@ namespace SpellBreakers_Server.GameSystem
             string id = Guid.NewGuid().ToString();
             Vector spawnPosition = packet.SpawnPosition;
 
-            Projectile projectile = (Projectile)_entityManager.AddEntity(EntityType.Projectile, id, spawnPosition.X, spawnPosition.Y, spawnPosition.Z);
+            Projectile projectile = (Projectile)_entityManager.AddEntity(EntityType.Projectile, id, spawnPosition);
             projectile.TargetPosition = packet.TargetPosition;
             projectile.OwnerID = packet.OwnerID;
         }

@@ -1,6 +1,6 @@
 ﻿using SpellBreakers_Server.Packet;
 
-namespace SpellBreakers_Server.GameSystem
+namespace SpellBreakers_Server.GameSystem.Entities
 {
     public class EntityManager
     {
@@ -8,33 +8,42 @@ namespace SpellBreakers_Server.GameSystem
 
         public IEnumerable<Entity> Entities => _entities.Values;
 
-        public Entity AddEntity(EntityType type, string id, float x, float y, float z)
+        public Entity AddEntity(EntityType type, string id, Vector position)
         {
             Entity entity = type switch
             {
-                EntityType.Character => new Character
+                EntityType.Projectile => new Projectile(new DefaultEntityInfo
                 {
                     EntityType = (ushort)type,
                     EntityID = id,
-                    Position = new Vector(x, y, z)
-                },
-                EntityType.Projectile => new Projectile
+                    Position = position
+                }),
+                _ => new Entity(new DefaultEntityInfo
                 {
                     EntityType = (ushort)type,
                     EntityID = id,
-                    Position = new Vector(x, y, z)
-                },
-                _ => new Entity
-                {
-                    EntityType = (ushort)type,
-                    EntityID = id,
-                    Position = new Vector(x, y, z)
-                }
+                    Position = position
+                })
             };
 
             _entities.Add(id, entity);
 
             return entity;
+        }
+
+        public Character AddCharacter(CharacterType type, string id, Vector position)
+        {
+            Character character = new Character(new CharacterInfo
+            {
+                EntityType = (ushort)EntityType.Character,
+                EntityID = id,
+                Position = position,
+                CharacterType = (ushort)type
+            });
+
+            _entities.Add(id, character);
+
+            return character;
         }
 
         public bool TryGetValue(string id, out Entity? entity)
@@ -60,9 +69,9 @@ namespace SpellBreakers_Server.GameSystem
                     Entity a = entities[i];
                     Entity b = entities[j];
 
-                    float dx = a.Position.X - b.Position.X;
-                    float dy = a.Position.Y - b.Position.Y;
-                    float dz = a.Position.Z - b.Position.Z;
+                    float dx = a.EntityInfo.Position.X - b.EntityInfo.Position.X;
+                    float dy = a.EntityInfo.Position.Y - b.EntityInfo.Position.Y;
+                    float dz = a.EntityInfo.Position.Z - b.EntityInfo.Position.Z;
                     float radiusSum = a.Radius + b.Radius;
 
                     if (dx * dx + dy * dy + dz * dz < radiusSum * radiusSum)
@@ -82,7 +91,7 @@ namespace SpellBreakers_Server.GameSystem
             {
                 if(entity.IsDead)
                 {
-                    ids.Add(entity.EntityID);
+                    ids.Add(entity.EntityInfo.EntityID);
                 }
             }
 

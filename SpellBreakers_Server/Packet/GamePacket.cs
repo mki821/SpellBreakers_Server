@@ -11,12 +11,39 @@ namespace SpellBreakers_Server.Packet
     }
 
     [MessagePackObject]
-    public class EntityInfo
+    [Union(0, typeof(DefaultEntityInfo))]
+    [Union(1, typeof(CharacterInfo))]
+    public abstract class EntityInfo
     {
         [Key(0)] public ushort EntityType { get; set; }
         [Key(1)] public string EntityID { get; set; } = "";
         [Key(2)] public Vector Position { get; set; }
         [Key(3)] public bool IsMoving { get; set; }
+    }
+
+    [MessagePackObject]
+    public class DefaultEntityInfo : EntityInfo
+    {
+
+    }
+
+    [MessagePackObject]
+    public class CharacterInfo : EntityInfo
+    {
+        [Key(4)] public ushort CharacterType { get; set; }
+        [Key(5)] public float CurrentHealth { get; set; }
+        [Key(6)] public float CurrentMana { get; set; }
+        [Key(7)] public Stat Stat { get; set; }
+    }
+
+    [MessagePackObject]
+    public struct Stat
+    {
+        [Key(0)] public float MaxHealth { get; set; }
+        [Key(1)] public float MaxMana { get; set; }
+        [Key(2)] public float Force { get; set; }
+        [Key(3)] public float Resistance { get; set; }
+        [Key(4)] public float Speed { get; set; }
     }
 
     [MessagePackObject]

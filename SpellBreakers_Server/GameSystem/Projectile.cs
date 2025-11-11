@@ -1,4 +1,5 @@
-﻿using SpellBreakers_Server.Packet;
+﻿using SpellBreakers_Server.GameSystem.Entities;
+using SpellBreakers_Server.Packet;
 
 namespace SpellBreakers_Server.GameSystem
 {
@@ -8,27 +9,30 @@ namespace SpellBreakers_Server.GameSystem
 
         public string OwnerID { get; set; } = "";
 
+        public Projectile(EntityInfo info) : base(info) { }
+
         public override void Update(float deltaTime)
         {
-            Vector direction = TargetPosition - Position;
+            Vector direction = TargetPosition - EntityInfo.Position;
             float distance = direction.Magnitude;
             float moveDistance = Speed * deltaTime;
 
             if (distance <= moveDistance || distance < 0.01f)
             {
-                Position = TargetPosition;
+                EntityInfo.Position = TargetPosition;
                 IsDead = true;
             }
             else
             {
-                Position += direction.Normalized * moveDistance;
+                EntityInfo.Position += direction.Normalized * moveDistance;
             }
         }
 
         public override void OnCollision(Entity other)
         {
-            if(other.EntityType == (ushort)GameSystem.EntityType.Character && other.EntityID != OwnerID)
+            if(other is Character character && other.EntityInfo.EntityID != OwnerID)
             {
+                character.TakeDamage(1.0f);
                 IsDead = true;
             }
         }

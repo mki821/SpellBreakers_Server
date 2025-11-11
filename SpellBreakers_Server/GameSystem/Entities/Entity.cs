@@ -1,25 +1,29 @@
 ﻿using SpellBreakers_Server.Packet;
 
-namespace SpellBreakers_Server.GameSystem
+namespace SpellBreakers_Server.GameSystem.Entities
 {
-    public class Entity : EntityInfo
+    public class Entity
     {
+        public EntityInfo EntityInfo { get; set; }
+
         public bool IsDead { get; set; }
         public Vector TargetPosition { get; set; }
         public virtual float Speed { get; set; }
         public virtual float Radius { get; set; } = 1.0f;
 
+        public Entity(EntityInfo info) => EntityInfo = info;
+
         public virtual void Update(float deltaTime)
         {
-            if (Speed == 0 || !IsMoving) return;
+            if (Speed == 0 || !EntityInfo.IsMoving) return;
 
-            Vector direction = TargetPosition - Position;
+            Vector direction = TargetPosition - EntityInfo.Position;
             float distance = direction.Magnitude;
 
             if (distance < 0.01f)
             {
-                Position = TargetPosition;
-                IsMoving = false;
+                EntityInfo.Position = TargetPosition;
+                EntityInfo.IsMoving = false;
 
                 return;
             }
@@ -27,12 +31,12 @@ namespace SpellBreakers_Server.GameSystem
             float moveDistance = Speed * deltaTime;
             if (moveDistance >= distance)
             {
-                Position = TargetPosition;
-                IsMoving = false;
+                EntityInfo.Position = TargetPosition;
+                EntityInfo.IsMoving = false;
             }
             else
             {
-                Position += direction.Normalized * moveDistance;
+                EntityInfo.Position += direction.Normalized * moveDistance;
             }
         }
 

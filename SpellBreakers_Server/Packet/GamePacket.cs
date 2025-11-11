@@ -7,7 +7,7 @@ namespace SpellBreakers_Server.Packet
     public class EntityInfoPacket : UdpPacketBase
     {
         public override ushort ID => (ushort)PacketId.EntityInfo;
-        [Key(2)] public IEnumerable<EntityInfo>? Entities = null;
+        [Key(3)] public IEnumerable<EntityInfo>? Entities = null;
     }
 
     [MessagePackObject]
@@ -17,7 +17,6 @@ namespace SpellBreakers_Server.Packet
         [Key(1)] public string EntityID { get; set; } = "";
         [Key(2)] public Vector Position { get; set; }
         [Key(3)] public bool IsMoving { get; set; }
-        [Key(4)] public bool IsDead { get; set; }
     }
 
     [MessagePackObject]
@@ -56,15 +55,15 @@ namespace SpellBreakers_Server.Packet
     public class MovePacket : UdpPacketBase
     {
         public override ushort ID => (ushort)PacketId.Move;
-        [Key(2)] public Vector TargetPosition { get; set; }
+        [Key(3)] public Vector TargetPosition { get; set; }
     }
 
     [MessagePackObject]
     public class FireProjectilePacket : UdpPacketBase
     {
         public override ushort ID => (ushort)PacketId.FireProjectile;
-        [Key(2)] public string OwnerID { get; set; } = "";
-        [Key(3)] public Vector SpawnPosition { get; set; }
-        [Key(4)] public Vector TargetPosition { get; set; }
+        [Key(3)] public string OwnerID { get; set; } = "";
+        [Key(4)] public Vector SpawnPosition { get; set; }
+        [Key(5)] public Vector TargetPosition { get; set; }
     }
 }

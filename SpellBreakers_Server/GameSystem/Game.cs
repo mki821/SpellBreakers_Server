@@ -41,6 +41,7 @@ namespace SpellBreakers_Server.GameSystem
         {
             CancellationToken token = _cts.Token;
             Stopwatch stopwatch = Stopwatch.StartNew();
+            uint currentTick = 0;
 
             try
             {
@@ -49,11 +50,14 @@ namespace SpellBreakers_Server.GameSystem
                     float deltaTime = (float)stopwatch.Elapsed.TotalSeconds;
                     stopwatch.Restart();
 
+                    ++currentTick;
+
                     _entityManager.Update(deltaTime);
                     _entityManager.CheckCollision();
 
                     EntityInfoPacket packet = new EntityInfoPacket
                     {
+                        Tick = currentTick,
                         Entities = _entityManager.Entities
                     };
 

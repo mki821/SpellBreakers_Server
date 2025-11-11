@@ -12,5 +12,6 @@ namespace SpellBreakers_Server.Packet
     public class UdpPacketBase : PacketBase
     {
         [Key(1)] public string Token { get; set; } = "";
+        [Key(2)] public uint Tick { get; set; }
     }
 }

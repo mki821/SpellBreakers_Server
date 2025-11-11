@@ -4,6 +4,7 @@ namespace SpellBreakers_Server.GameSystem
 {
     public class Entity : EntityInfo
     {
+        public bool IsDead { get; set; }
         public Vector TargetPosition { get; set; }
         public virtual float Speed { get; set; }
         public virtual float Radius { get; set; } = 1.0f;

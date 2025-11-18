@@ -34,5 +34,25 @@ namespace SpellBreakers_Server.GameSystem.Characters
         {
 
         }
+
+        protected override void Skill5(SkillPacket packet)
+        {
+
+        }
+
+        protected override void Skill6(SkillPacket packet)
+        {
+
+        }
+
+        protected override void Skill7(SkillPacket packet)
+        {
+
+        }
+
+        protected override void Skill8(SkillPacket packet)
+        {
+
+        }
     }
 }

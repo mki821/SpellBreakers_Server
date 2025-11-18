@@ -1,4 +1,5 @@
-﻿using SpellBreakers_Server.GameSystem.Entities;
+﻿using SpellBreakers_Server.GameSystem.Characters;
+using SpellBreakers_Server.GameSystem.Entities;
 using SpellBreakers_Server.Packet;
 
 namespace SpellBreakers_Server.GameSystem
@@ -9,7 +10,7 @@ namespace SpellBreakers_Server.GameSystem
 
         public string OwnerID { get; set; } = "";
 
-        public Projectile(EntityInfo info) : base(info) { }
+        public Projectile(EntityInfo info, EntityManager manager) : base(info, manager) { }
 
         public override void Update(float deltaTime)
         {

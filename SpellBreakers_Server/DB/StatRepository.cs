@@ -1,5 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
-using SpellBreakers_Server.GameSystem;
+using SpellBreakers_Server.GameSystem.Characters;
 using SpellBreakers_Server.Packet;
 
 namespace SpellBreakers_Server.DB

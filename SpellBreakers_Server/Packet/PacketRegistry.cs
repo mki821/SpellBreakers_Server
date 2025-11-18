@@ -34,7 +34,7 @@
 
             { (ushort)PacketId.EntityInfo, typeof(EntityInfoPacket) },
             { (ushort)PacketId.Move, typeof(MovePacket) },
-            { (ushort)PacketId.FireProjectile, typeof(FireProjectilePacket) },
+            { (ushort)PacketId.Skill, typeof(SkillPacket) },
         };
 
         public static Type GetTypeById(ushort id) => _typeById[id];

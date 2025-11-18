@@ -1,6 +1,4 @@
-﻿using SpellBreakers_Server.DB;
-using SpellBreakers_Server.GameSystem;
-using SpellBreakers_Server.Packet;
+﻿using SpellBreakers_Server.Packet;
 using SpellBreakers_Server.PacketHandlers.Auth;
 using SpellBreakers_Server.PacketHandlers.Games;
 using SpellBreakers_Server.PacketHandlers.Rooms;
@@ -33,7 +31,7 @@ namespace SpellBreakers_Server
             PacketHandler.Register(PacketId.Ready, new ReadyHandler());
 
             PacketHandler.Register(PacketId.Move, new MoveHandler());
-            PacketHandler.Register(PacketId.FireProjectile, new FireProjectileHandler());
+            PacketHandler.Register(PacketId.Skill, new SkillHandler());
         }
 
         public async Task StartAsync()

@@ -5,13 +5,18 @@ namespace SpellBreakers_Server.GameSystem.Entities
     public class Entity
     {
         public EntityInfo EntityInfo { get; set; }
+        protected EntityManager EntityManager { get; }
 
         public bool IsDead { get; set; }
         public Vector TargetPosition { get; set; }
         public virtual float Speed { get; set; }
         public virtual float Radius { get; set; } = 1.0f;
 
-        public Entity(EntityInfo info) => EntityInfo = info;
+        public Entity(EntityInfo info, EntityManager manager)
+        {
+            EntityInfo = info;
+            EntityManager = manager;
+        }
 
         public virtual void Update(float deltaTime)
         {

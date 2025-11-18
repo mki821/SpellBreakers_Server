@@ -32,6 +32,6 @@
 
         EntityInfo,
         Move,
-        FireProjectile,
+        Skill,
     }
 }

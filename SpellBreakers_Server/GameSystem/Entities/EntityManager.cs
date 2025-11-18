@@ -1,4 +1,5 @@
-﻿using SpellBreakers_Server.Packet;
+﻿using SpellBreakers_Server.GameSystem.Characters;
+using SpellBreakers_Server.Packet;
 
 namespace SpellBreakers_Server.GameSystem.Entities
 {
@@ -17,13 +18,13 @@ namespace SpellBreakers_Server.GameSystem.Entities
                     EntityType = (ushort)type,
                     EntityID = id,
                     Position = position
-                }),
+                }, this),
                 _ => new Entity(new DefaultEntityInfo
                 {
                     EntityType = (ushort)type,
                     EntityID = id,
                     Position = position
-                })
+                }, this)
             };
 
             _entities.Add(id, entity);
@@ -33,13 +34,13 @@ namespace SpellBreakers_Server.GameSystem.Entities
 
         public Character AddCharacter(CharacterType type, string id, Vector position)
         {
-            Character character = new Character(new CharacterInfo
+            Character character = CharacterFactory.Create(type, new CharacterInfo
             {
                 EntityType = (ushort)EntityType.Character,
                 EntityID = id,
                 Position = position,
                 CharacterType = (ushort)type
-            });
+            }, this);
 
             _entities.Add(id, character);
 

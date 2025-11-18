@@ -1,4 +1,5 @@
 ﻿using SpellBreakers_Server.DB;
+using SpellBreakers_Server.GameSystem.Characters;
 using SpellBreakers_Server.Packet;
 
 namespace SpellBreakers_Server.GameSystem

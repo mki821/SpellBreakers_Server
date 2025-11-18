@@ -86,11 +86,12 @@ namespace SpellBreakers_Server.Packet
     }
 
     [MessagePackObject]
-    public class FireProjectilePacket : UdpPacketBase
+    public class SkillPacket : UdpPacketBase
     {
-        public override ushort ID => (ushort)PacketId.FireProjectile;
-        [Key(3)] public string OwnerID { get; set; } = "";
-        [Key(4)] public Vector SpawnPosition { get; set; }
-        [Key(5)] public Vector TargetPosition { get; set; }
+        public override ushort ID => (ushort)PacketId.Skill;
+        [Key(3)] public ushort SkillType { get; set; }
+        [Key(4)] public string OwnerID { get; set; } = "";
+        [Key(5)] public Vector SpawnPosition { get; set; }
+        [Key(6)] public Vector TargetPosition { get; set; }
     }
 }

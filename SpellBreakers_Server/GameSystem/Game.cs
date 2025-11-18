@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using SpellBreakers_Server.GameSystem.Characters;
 using SpellBreakers_Server.GameSystem.Entities;
 using SpellBreakers_Server.Packet;
 using SpellBreakers_Server.Rooms;
@@ -84,14 +85,15 @@ namespace SpellBreakers_Server.GameSystem
             }
         }
 
-        public void FireProjectile(FireProjectilePacket packet)
+        public void UseSkill(SkillPacket packet)
         {
-            string id = Guid.NewGuid().ToString();
-            Vector spawnPosition = packet.SpawnPosition;
-
-            Projectile projectile = (Projectile)_entityManager.AddEntity(EntityType.Projectile, id, spawnPosition);
-            projectile.TargetPosition = packet.TargetPosition;
-            projectile.OwnerID = packet.OwnerID;
+            if (_entityManager.TryGetValue(packet.OwnerID, out Entity? entity))
+            {
+                if (entity is Character character)
+                {
+                    character.UseSkill(packet);
+                }
+            }
         }
     }
 }
